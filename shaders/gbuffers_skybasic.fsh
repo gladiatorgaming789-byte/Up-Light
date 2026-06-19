@@ -35,18 +35,12 @@ void main() {
         sunAmount,
         4.0
     );
-    
+
     vec3 atmosphereColor =
         vec3(
-            0.55,
-            0.75,
+            0.70,
+            0.85,
             1.00
-        );
-
-    float atmosphere =
-        pow(
-            sunAmount,
-            2.0
         );
 
     float timeOfDay =
@@ -73,21 +67,6 @@ void main() {
             0.15,
             0.85,
             rawDayFactor
-        );
-
-    float sunsetFade =
-        smoothstep(
-            12000.0,
-            14000.0,
-            timeOfDay
-        );
-
-    float sunriseFade =
-        1.0 -
-        smoothstep(
-            22000.0,
-            24000.0,
-            timeOfDay
         );
         
     float dawnDuskFactor =
@@ -220,18 +199,44 @@ void main() {
             horizonGlow * 0.3
         );
 
+    float sunHeight =
+        clamp(
+            worldSunDirection.y * 0.5 + 0.5,
+            0.0,
+            1.0
+        );
+
     float middayBoost =
         smoothstep(
-            0.2,
-            0.8,
-            dayFactor
+            0.25,
+            0.85,
+            sunHeight
+        );
+
+    float oppositeAmount =
+        max(
+            dot(
+                dir,
+                -worldSunDirection
+            ),
+            0.0
+        );
+
+    float oppositeAtmosphere =
+        pow(
+            oppositeAmount,
+            2.0
         );
 
     skyColor +=
-        atmosphereColor *
-        atmosphere *
+        vec3(
+            0.05,
+            0.10,
+            0.20
+        ) *
+        oppositeAtmosphere *
         middayBoost *
-        0.35;
+        0.25;
 
     outColor0 =
         vec4(
