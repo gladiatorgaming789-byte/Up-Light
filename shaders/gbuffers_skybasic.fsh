@@ -54,10 +54,6 @@ void main() {
             24000.0,
             timeOfDay
         );
-
-    float starVisibility =
-        sunsetFade *
-        sunriseFade;
         
     float dawnDuskFactor =
         pow(
@@ -189,16 +185,9 @@ void main() {
             horizonGlow * 0.3
         );
 
-    float skyAlpha =
-        mix(
-            1.0,
-            0.85,
-            starVisibility
-        );
-
     outColor0 =
         vec4(
             skyColor,
-            skyAlpha
+            1.0
         );
 }
