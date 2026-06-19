@@ -35,17 +35,18 @@ void main() {
         sunAmount,
         4.0
     );
+    
     vec3 atmosphereColor =
         vec3(
-            1.0,
-            0.85,
-            0.60
+            0.55,
+            0.75,
+            1.00
         );
 
     float atmosphere =
         pow(
             sunAmount,
-            4.0
+            2.0
         );
 
     float timeOfDay =
@@ -219,11 +220,18 @@ void main() {
             horizonGlow * 0.3
         );
 
+    float middayBoost =
+        smoothstep(
+            0.2,
+            0.8,
+            dayFactor
+        );
+
     skyColor +=
         atmosphereColor *
         atmosphere *
-        dayFactor *
-        0.15;
+        middayBoost *
+        0.35;
 
     outColor0 =
         vec4(
