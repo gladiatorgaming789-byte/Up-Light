@@ -3,15 +3,49 @@
 in vec3 skyDirection;
 
 uniform int worldTime;
+uniform vec3 shadowLightPosition;
+uniform mat4 gbufferModelViewInverse;
 
 /* DRAWBUFFERS:0 */
 layout(location = 0) out vec4 outColor0;
 
 void main() {
 
+    vec3 worldSunDirection =
+        normalize(
+            mat3(gbufferModelViewInverse) *
+            shadowLightPosition
+        );
+
     vec3 dir =
         normalize(
             skyDirection
+        );
+
+    float sunAmount =
+        max(
+            dot(
+                dir,
+                worldSunDirection
+            ),
+            0.0
+        );
+
+    pow(
+        sunAmount,
+        4.0
+    );
+    vec3 atmosphereColor =
+        vec3(
+            1.0,
+            0.85,
+            0.60
+        );
+
+    float atmosphere =
+        pow(
+            sunAmount,
+            4.0
         );
 
     float timeOfDay =
@@ -184,6 +218,12 @@ void main() {
             sunsetColor,
             horizonGlow * 0.3
         );
+
+    skyColor +=
+        atmosphereColor *
+        atmosphere *
+        dayFactor *
+        0.15;
 
     outColor0 =
         vec4(
