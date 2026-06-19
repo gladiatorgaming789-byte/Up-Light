@@ -1,0 +1,7 @@
+Physics Mod Compatibility:
+	Smoke: Regular smoke caused from any smoke source creates a box around the player. This does get fixed with volumetric smoke being turned on but 	it would be nice to have compatibility with it.
+	Physics: The physics mod will turn many objects that would normally have physics in real life into entities, allowing them to have realistic 	movement, but will make it so they are not affected by gbuffers_textured.* or textured_lit.*
+
+Sky:
+	Atmospheric scattering: This is great, but the sun and moon are way too bright. This issue is current.
+	Stars: Vanilla Minecraft controls the stars, however we can control the star's visibility using the alpha value. Current issue with stars is that 	they pop out once the time goes from 24000 to 0. This issue is current.
