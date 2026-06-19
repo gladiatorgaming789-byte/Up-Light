@@ -18,7 +18,13 @@ void main() {
 
     float timeOfDay =
         mod(
-            float(worldTime) + 6000.0,
+            float(worldTime),
+            24000.0
+        );
+
+    float skyTime =
+        mod(
+            timeOfDay + 1000.0,
             24000.0
         );
 
