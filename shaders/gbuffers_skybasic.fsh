@@ -54,7 +54,7 @@ void main() {
             max(
                 0.0,
                 sin(
-                    timeOfDay *
+                    skyTime *
                     6.2831853 /
                     12000.0
                 )
@@ -188,6 +188,6 @@ void main() {
     outColor0 =
         vec4(
             skyColor,
-            0.0
+            1.0
         );
 }
