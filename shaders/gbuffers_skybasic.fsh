@@ -31,16 +31,17 @@ void main() {
             0.0
         );
 
-    pow(
-        sunAmount,
-        4.0
-    );
-
     vec3 atmosphereColor =
         vec3(
             0.70,
             0.85,
             1.00
+        );
+
+    float atmosphere =
+        pow(
+            sunAmount,
+            2.0
         );
 
     float timeOfDay =
@@ -212,6 +213,12 @@ void main() {
             0.85,
             sunHeight
         );
+
+    skyColor +=
+        atmosphereColor *
+        atmosphere *
+        middayBoost *
+        0.35;
 
     float oppositeAmount =
         max(
