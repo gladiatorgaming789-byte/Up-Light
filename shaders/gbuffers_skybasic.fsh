@@ -2,8 +2,6 @@
 
 in vec3 skyDirection;
 
-uniform vec3 shadowLightPosition;
-uniform mat4 gbufferModelViewInverse;
 uniform int worldTime;
 
 /* DRAWBUFFERS:0 */
@@ -24,7 +22,7 @@ void main() {
 
     float skyTime =
         mod(
-            timeOfDay + 1000.0,
+            timeOfDay + 1850.0,
             24000.0
         );
 
@@ -42,13 +40,25 @@ void main() {
             rawDayFactor
         );
 
-    float starVisibility =
+    float sunsetFade =
         smoothstep(
-            0.35,
-            0.05,
-            dayFactor
+            12000.0,
+            14000.0,
+            timeOfDay
         );
 
+    float sunriseFade =
+        1.0 -
+        smoothstep(
+            22000.0,
+            24000.0,
+            timeOfDay
+        );
+
+    float starVisibility =
+        sunsetFade *
+        sunriseFade;
+        
     float dawnDuskFactor =
         pow(
             max(
@@ -60,12 +70,6 @@ void main() {
                 )
             ),
             2.0
-        );
-
-    dawnDuskFactor =
-        pow(
-            dawnDuskFactor,
-            4.0
         );
 
     float t =
@@ -121,16 +125,16 @@ void main() {
 
     vec3 nightHorizon =
         vec3(
-            0.03,
             0.04,
-            0.08
+            0.05,
+            0.10
         );
 
     vec3 nightZenith =
         vec3(
-            0.00,
             0.01,
-            0.04
+            0.02,
+            0.06
         );
         
     vec3 horizonColor =
@@ -182,12 +186,19 @@ void main() {
         mix(
             skyColor,
             sunsetColor,
-            horizonGlow * 0.5
+            horizonGlow * 0.3
+        );
+
+    float skyAlpha =
+        mix(
+            1.0,
+            0.85,
+            starVisibility
         );
 
     outColor0 =
         vec4(
             skyColor,
-            1.0
+            skyAlpha
         );
 }
