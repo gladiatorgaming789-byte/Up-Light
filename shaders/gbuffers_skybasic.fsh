@@ -197,7 +197,7 @@ void main() {
         mix(
             skyColor,
             sunsetColor,
-            horizonGlow * 0.3
+            horizonGlow * 0.25
         );
 
     float sunHeight =
@@ -218,7 +218,7 @@ void main() {
         atmosphereColor *
         atmosphere *
         middayBoost *
-        0.35;
+        0.15;
 
     float oppositeAmount =
         max(

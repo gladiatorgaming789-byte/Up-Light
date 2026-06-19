@@ -4,4 +4,7 @@ Physics Mod Compatibility:
 
 Sky:
 	Atmospheric scattering: This is great, but the sun and moon are way too bright. This issue is current.
-	Stars: Vanilla Minecraft controls the stars, however we can control the star's visibility using the alpha value. Current issue with stars is that 	they pop out once the time goes from 24000 to 0. This issue is current.
+	Stars: Vanilla Minecraft controls the stars, however we can control the star's visibility using the alpha value. Current issue with stars is 	that	they pop out once the time goes from 24000 to 0. This issue is current.
+	
+Lighting:
+	Lighting jumping: Whenever one celestial body crosses the horizon, lighting immediately switches to the other celestial body, causing a ugly 	jump
