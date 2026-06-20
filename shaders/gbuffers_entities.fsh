@@ -14,9 +14,9 @@ in vec2 lightmapUV;
 /* DRAWBUFFERS:0 */
 layout(location = 0) out vec4 outColor;
 
-const float AMBIENT_LIGHT = 0.38;
-const float DIRECT_LIGHT_STRENGTH = 0.68;
-const float LIGHTMAP_TINT_STRENGTH = 0.85;
+const float AMBIENT_LIGHT_STRENGTH = 0.42;
+const float DIRECT_LIGHT_STRENGTH = 0.72;
+const float LIGHTMAP_TINT_STRENGTH = 0.90;
 const float TAU = 6.2831853;
 
 void main() {
@@ -59,14 +59,14 @@ void main() {
 
     float dayFactor =
         smoothstep(
-            0.15,
-            0.85,
+            0.12,
+            0.88,
             rawDayFactor
         );
 
     float skyTime =
         mod(
-            timeOfDay + 1850.0,
+            timeOfDay + 2600.0,
             24000.0
         );
 
@@ -83,39 +83,86 @@ void main() {
             2.0
         );
 
+    float transitionDistance =
+        abs(
+            rawDayFactor - 0.5
+        ) * 2.0;
+
+    float stableDirectLight =
+        smoothstep(
+            0.22,
+            0.68,
+            transitionDistance
+        );
+
     vec3 daylightColor =
+        vec3(
+            1.00,
+            0.93,
+            0.80
+        );
+
+    vec3 moonlightColor =
+        vec3(
+            0.26,
+            0.34,
+            0.62
+        );
+
+    vec3 sunsetColor =
+        vec3(
+            1.00,
+            0.38,
+            0.16
+        );
+
+    vec3 dayAmbientColor =
         vec3(
             1.00,
             0.96,
             0.88
         );
 
-    vec3 moonlightColor =
+    vec3 nightAmbientColor =
         vec3(
-            0.34,
-            0.43,
-            0.68
+            0.38,
+            0.45,
+            0.70
         );
 
-    vec3 sunsetColor =
+    vec3 sunsetAmbientColor =
         vec3(
             1.00,
-            0.48,
-            0.22
+            0.52,
+            0.28
         );
 
-    vec3 sunlightColor =
+    vec3 directLightColor =
         mix(
             moonlightColor,
             daylightColor,
             dayFactor
         );
 
-    sunlightColor =
+    directLightColor =
         mix(
-            sunlightColor,
+            directLightColor,
             sunsetColor,
-            dawnDuskFactor * 0.35
+            dawnDuskFactor * 0.28
+        );
+
+    vec3 ambientLightColor =
+        mix(
+            nightAmbientColor,
+            dayAmbientColor,
+            dayFactor
+        );
+
+    ambientLightColor =
+        mix(
+            ambientLightColor,
+            sunsetAmbientColor,
+            dawnDuskFactor * 0.18
         );
 
     vec3 sunDirection =
@@ -123,30 +170,30 @@ void main() {
             shadowLightPosition
         );
 
+    vec3 normalDirection =
+        normalize(
+            viewNormal
+        );
+
     float diffuse =
         max(
             dot(
-                viewNormal,
+                normalDirection,
                 sunDirection
             ),
             0.0
         );
 
     float directVisibility =
-        mix(
-            1.0,
-            0.35,
-            dawnDuskFactor
-        );
+        stableDirectLight;
 
     vec3 lighting =
-        vec3(
-            AMBIENT_LIGHT
-        ) +
+        ambientLightColor *
+        AMBIENT_LIGHT_STRENGTH +
+        directLightColor *
         diffuse *
         DIRECT_LIGHT_STRENGTH *
-        directVisibility *
-        sunlightColor;
+        directVisibility;
 
     vec3 finalColor =
         textureColor.rgb *
