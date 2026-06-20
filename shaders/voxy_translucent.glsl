@@ -1,44 +1,26 @@
 layout(location = 0) out vec4 outColor0;
 
-const float VOXY_TRANSLUCENT_AMBIENT = 0.48;
 const float VOXY_TRANSLUCENT_TAU = 6.2831853;
 
-vec3 voxy_getTranslucentLightmapTint(
+vec2 voxy_decodeLightmap(
     vec2 lightMap
 ) {
 
-    vec2 lm =
-        lightMap;
-
-    if (
-        max(
-            lm.x,
-            lm.y
-        ) > 1.5
-    ) {
-
-        lm /=
-            256.0;
-    }
-
-    lm =
-        clamp(
-            lm,
-            vec2(0.0),
-            vec2(1.0)
-        );
-
-    float brightness =
-        max(
-            lm.x,
-            lm.y
-        );
-
     return
-        mix(
-            vec3(0.35),
-            vec3(1.0),
-            brightness
+        clamp(
+            (
+                lightMap -
+                vec2(
+                    0.03125
+                )
+            ) *
+            1.0666667,
+            vec2(
+                0.0
+            ),
+            vec2(
+                1.0
+            )
         );
 }
 
@@ -66,18 +48,33 @@ void voxy_emitFragment(
             rawDayFactor
         );
 
+    vec2 lightMap =
+        voxy_decodeLightmap(
+            parameters.lightMap
+        );
+
+    float blockLight =
+        lightMap.x;
+
+    float skyLight =
+        lightMap.y;
+
+    vec4 sampledColor =
+        parameters.sampledColour *
+        parameters.tinting;
+
     vec3 dayTint =
         vec3(
-            0.85,
+            0.86,
             0.95,
             1.00
         );
 
     vec3 nightTint =
         vec3(
-            0.28,
-            0.36,
-            0.62
+            0.34,
+            0.42,
+            0.72
         );
 
     vec3 timeTint =
@@ -87,17 +84,36 @@ void voxy_emitFragment(
             dayFactor
         );
 
-    vec4 sampledColor =
-        parameters.sampledColour *
-        parameters.tinting;
+    float skyBrightness =
+        mix(
+            0.46,
+            1.0,
+            dayFactor
+        );
+
+    float brightness =
+        0.42 +
+        skyLight *
+        skyBrightness *
+        0.42 +
+        blockLight *
+        0.35;
 
     vec3 finalColor =
         sampledColor.rgb *
         timeTint *
-        voxy_getTranslucentLightmapTint(
-            parameters.lightMap
-        ) *
-        VOXY_TRANSLUCENT_AMBIENT;
+        brightness;
+
+    finalColor =
+        max(
+            finalColor,
+            sampledColor.rgb *
+            vec3(
+                0.16,
+                0.19,
+                0.30
+            )
+        );
 
     outColor0 =
         vec4(

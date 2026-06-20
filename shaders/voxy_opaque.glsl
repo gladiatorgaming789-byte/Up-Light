@@ -1,7 +1,5 @@
 layout(location = 0) out vec4 outColor0;
 
-const float VOXY_AMBIENT_LIGHT_STRENGTH = 0.44;
-const float VOXY_DIRECT_LIGHT_STRENGTH = 0.45;
 const float VOXY_TAU = 6.2831853;
 
 vec3 voxy_getFaceNormal(
@@ -12,11 +10,11 @@ vec3 voxy_getFaceNormal(
         face >> 1u;
 
     float side =
-        (
-            (face & 1u) == 1u
-        ) ?
-        1.0 :
-        -1.0;
+        float(
+            int(
+                face & 1u
+            )
+        ) * 2.0 - 1.0;
 
     vec3 normal =
         vec3(
@@ -32,61 +30,25 @@ vec3 voxy_getFaceNormal(
         );
 }
 
-vec3 voxy_getLightmapTint(
+vec2 voxy_decodeLightmap(
     vec2 lightMap
 ) {
 
-    vec2 lm =
-        lightMap;
-
-    if (
-        max(
-            lm.x,
-            lm.y
-        ) > 1.5
-    ) {
-
-        lm /=
-            256.0;
-    }
-
-    lm =
-        clamp(
-            lm,
-            vec2(0.0),
-            vec2(1.0)
-        );
-
-    float blockLight =
-        lm.x;
-
-    float skyLight =
-        lm.y;
-
-    vec3 blockLightColor =
-        vec3(
-            1.00,
-            0.72,
-            0.42
-        ) *
-        blockLight;
-
-    vec3 skyLightColor =
-        vec3(
-            1.0
-        ) *
-        skyLight;
-
-    vec3 lightColor =
-        max(
-            skyLightColor,
-            blockLightColor
-        );
-
     return
-        max(
-            lightColor,
-            vec3(0.25)
+        clamp(
+            (
+                lightMap -
+                vec2(
+                    0.03125
+                )
+            ) *
+            1.0666667,
+            vec2(
+                0.0
+            ),
+            vec2(
+                1.0
+            )
         );
 }
 
@@ -114,6 +76,25 @@ void voxy_emitFragment(
             rawDayFactor
         );
 
+    float skyTime =
+        mod(
+            timeOfDay + 2600.0,
+            24000.0
+        );
+
+    float dawnDuskFactor =
+        pow(
+            max(
+                0.0,
+                sin(
+                    skyTime *
+                    VOXY_TAU /
+                    12000.0
+                )
+            ),
+            2.0
+        );
+
     float transitionDistance =
         abs(
             rawDayFactor - 0.5
@@ -126,6 +107,21 @@ void voxy_emitFragment(
             transitionDistance
         );
 
+    vec2 lightMap =
+        voxy_decodeLightmap(
+            parameters.lightMap
+        );
+
+    float blockLight =
+        lightMap.x;
+
+    float skyLight =
+        lightMap.y;
+
+    vec3 baseColor =
+        parameters.sampledColour.rgb *
+        parameters.tinting.rgb;
+
     vec3 daylightColor =
         vec3(
             1.00,
@@ -135,9 +131,16 @@ void voxy_emitFragment(
 
     vec3 moonlightColor =
         vec3(
-            0.26,
-            0.34,
-            0.62
+            0.32,
+            0.42,
+            0.74
+        );
+
+    vec3 sunsetColor =
+        vec3(
+            1.00,
+            0.42,
+            0.18
         );
 
     vec3 directLightColor =
@@ -145,6 +148,48 @@ void voxy_emitFragment(
             moonlightColor,
             daylightColor,
             dayFactor
+        );
+
+    directLightColor =
+        mix(
+            directLightColor,
+            sunsetColor,
+            dawnDuskFactor * 0.18
+        );
+
+    vec3 dayAmbientColor =
+        vec3(
+            1.00,
+            0.96,
+            0.88
+        );
+
+    vec3 nightAmbientColor =
+        vec3(
+            0.32,
+            0.40,
+            0.70
+        );
+
+    vec3 sunsetAmbientColor =
+        vec3(
+            1.00,
+            0.52,
+            0.28
+        );
+
+    vec3 ambientColor =
+        mix(
+            nightAmbientColor,
+            dayAmbientColor,
+            dayFactor
+        );
+
+    ambientColor =
+        mix(
+            ambientColor,
+            sunsetAmbientColor,
+            dawnDuskFactor * 0.12
         );
 
     vec3 normalDirection =
@@ -166,25 +211,78 @@ void voxy_emitFragment(
             0.0
         );
 
-    vec3 baseColor =
-        parameters.sampledColour.rgb *
-        parameters.tinting.rgb;
+    /*
+        Voxy LOD lighting should not be multiplied by a fully dark night lightmap.
+        Sky light is used as influence, but a night floor keeps far terrain readable.
+    */
+    float skyBrightness =
+        mix(
+            0.42,
+            1.0,
+            dayFactor
+        );
 
-    vec3 lighting =
-        vec3(
-            VOXY_AMBIENT_LIGHT_STRENGTH
-        ) +
+    float ambientStrength =
+        mix(
+            0.48,
+            0.62,
+            dayFactor
+        );
+
+    ambientStrength *=
+        mix(
+            0.75,
+            1.0,
+            skyLight
+        );
+
+    vec3 ambientLighting =
+        ambientColor *
+        ambientStrength *
+        skyBrightness;
+
+    vec3 directLighting =
         directLightColor *
         diffuse *
-        VOXY_DIRECT_LIGHT_STRENGTH *
-        stableDirectLight;
+        0.34 *
+        stableDirectLight *
+        skyLight;
 
+    vec3 blockLighting =
+        vec3(
+            1.00,
+            0.70,
+            0.38
+        ) *
+        pow(
+            blockLight,
+            1.15
+        ) *
+        1.15;
+
+    vec3 lighting =
+        ambientLighting +
+        directLighting +
+        blockLighting;
+
+    lighting =
+        max(
+            lighting,
+            vec3(
+                0.18,
+                0.21,
+                0.32
+            )
+        );
+
+    /*
+        Slight LOD lift so far terrain does not crush to black.
+        Fog/composite will still soften it afterward.
+    */
     vec3 finalColor =
         baseColor *
-        voxy_getLightmapTint(
-            parameters.lightMap
-        ) *
-        lighting;
+        lighting *
+        1.18;
 
     outColor0 =
         vec4(

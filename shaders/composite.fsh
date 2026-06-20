@@ -10,9 +10,7 @@ uniform float dhFarPlane;
 #endif
 
 #ifdef VOXY
-uniform sampler2D vxDepthTexOpaque;
 uniform sampler2D vxDepthTexTrans;
-uniform int vxRenderDistance;
 #endif
 
 uniform int worldTime;
@@ -25,6 +23,15 @@ in vec2 texcoord;
 layout(location = 0) out vec4 color;
 
 const float TAU = 6.2831853;
+const float VOXY_NEAR_PLANE = 16.0;
+const float VOXY_FAR_PLANE = 48000.0;
+
+bool validDepth(float depth) {
+
+    return
+        depth > 0.0 &&
+        depth < 0.999999;
+}
 
 float linearizeDepth(
     float depth,
@@ -69,10 +76,17 @@ void main() {
     bool hasDepth =
         false;
 
+    bool isLodDepth =
+        false;
+
     float viewDistance =
         0.0;
 
-    if (vanillaDepth < 0.9999) {
+    if (
+        validDepth(
+            vanillaDepth
+        )
+    ) {
 
         viewDistance =
             linearizeDepth(
@@ -93,7 +107,11 @@ void main() {
             texcoord
         ).r;
 
-    if (dhDepth < 0.9999) {
+    if (
+        validDepth(
+            dhDepth
+        )
+    ) {
 
         float dhViewDistance =
             linearizeDepth(
@@ -112,6 +130,9 @@ void main() {
 
             hasDepth =
                 true;
+
+            isLodDepth =
+                true;
         }
     }
 
@@ -125,22 +146,17 @@ void main() {
             texcoord
         ).r;
 
-    if (vxDepth < 0.9999) {
-
-        float vxNearPlane =
-            16.0;
-
-        float vxFarPlane =
-            max(
-                16.0,
-                float(vxRenderDistance) * 16.0
-            );
+    if (
+        validDepth(
+            vxDepth
+        )
+    ) {
 
         float vxViewDistance =
             linearizeDepth(
                 vxDepth,
-                vxNearPlane,
-                vxFarPlane
+                VOXY_NEAR_PLANE,
+                VOXY_FAR_PLANE
             );
 
         if (
@@ -153,15 +169,14 @@ void main() {
 
             hasDepth =
                 true;
+
+            isLodDepth =
+                true;
         }
     }
 
 #endif
 
-    /*
-        No vanilla, DH, or Voxy geometry at this pixel.
-        Leave sky untouched because skybasic handles sky atmosphere.
-    */
     if (!hasDepth) {
 
         color =
@@ -218,9 +233,9 @@ void main() {
 
     vec3 nightFogColor =
         vec3(
+            0.025,
             0.035,
-            0.045,
-            0.085
+            0.075
         );
 
     vec3 dawnDuskFogColor =
@@ -241,7 +256,7 @@ void main() {
         mix(
             fogColor,
             dawnDuskFogColor,
-            dawnDuskFactor * 0.22
+            dawnDuskFactor * 0.18
         );
 
     float fogStart =
@@ -250,25 +265,20 @@ void main() {
     float fogEnd =
         far * 0.82;
 
-#ifdef VOXY
+    float maxFog =
+        0.50;
 
-    fogEnd =
-        max(
-            fogEnd,
-            float(vxRenderDistance) * 16.0 * 0.82
-        );
+    if (isLodDepth) {
 
-#endif
+        fogStart =
+            far * 0.06;
 
-#ifdef DISTANT_HORIZONS
+        fogEnd =
+            far * 0.52;
 
-    fogEnd =
-        max(
-            fogEnd,
-            dhFarPlane * 0.82
-        );
-
-#endif
+        maxFog =
+            0.78;
+    }
 
     float fogAmount =
         smoothstep(
@@ -281,7 +291,7 @@ void main() {
         clamp(
             fogAmount,
             0.0,
-            0.50
+            maxFog
         );
 
     vec3 finalColor =

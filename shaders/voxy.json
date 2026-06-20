@@ -2,14 +2,7 @@
     "version": 1,
     "uniforms": [
         "worldTime",
-        "shadowLightPosition",
-        "vxRenderDistance",
-        "vxViewProj",
-        "vxViewProjInv",
-        "vxModelView",
-        "vxModelViewInv",
-        "vxProj",
-        "vxProjInv"
+        "shadowLightPosition"
     ],
     "samplers": {
         "vxDepthTexOpaque": "sampler2D",
