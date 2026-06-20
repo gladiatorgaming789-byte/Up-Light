@@ -1,7 +1,6 @@
 #version 460
 
 uniform sampler2D gtexture;
-uniform int worldTime;
 
 in vec2 texcoord;
 
@@ -20,5 +19,6 @@ void main() {
         discard;
     }
 
-    outColor0 = tex;
+    outColor0 =
+        tex;
 }

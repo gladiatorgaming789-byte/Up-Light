@@ -9,6 +9,8 @@ uniform mat4 gbufferModelViewInverse;
 /* DRAWBUFFERS:0 */
 layout(location = 0) out vec4 outColor0;
 
+const float TAU = 6.2831853;
+
 void main() {
 
     vec3 worldSunDirection =
@@ -22,26 +24,13 @@ void main() {
             skyDirection
         );
 
-    float sunAmount =
+    float celestialAmount =
         max(
             dot(
                 dir,
                 worldSunDirection
             ),
             0.0
-        );
-
-    vec3 atmosphereColor =
-        vec3(
-            0.70,
-            0.85,
-            1.00
-        );
-
-    float atmosphere =
-        pow(
-            sunAmount,
-            2.0
         );
 
     float timeOfDay =
@@ -59,7 +48,7 @@ void main() {
     float rawDayFactor =
         sin(
             timeOfDay *
-            6.2831853 /
+            TAU /
             24000.0
         ) * 0.5 + 0.5;
 
@@ -69,14 +58,14 @@ void main() {
             0.85,
             rawDayFactor
         );
-        
+
     float dawnDuskFactor =
         pow(
             max(
                 0.0,
                 sin(
                     skyTime *
-                    6.2831853 /
+                    TAU /
                     12000.0
                 )
             ),
@@ -147,7 +136,7 @@ void main() {
             0.02,
             0.06
         );
-        
+
     vec3 horizonColor =
         mix(
             nightHorizon,
@@ -214,6 +203,33 @@ void main() {
             sunHeight
         );
 
+    /*
+        Atmospheric scattering.
+
+        The second multiplier prevents the atmosphere from becoming strongest
+        directly on top of the sun/moon texture. This keeps the celestial body
+        from becoming overexposed while preserving a glow around it.
+    */
+    float atmosphere =
+        pow(
+            celestialAmount,
+            2.0
+        ) *
+        (
+            1.0 -
+            pow(
+                celestialAmount,
+                8.0
+            )
+        );
+
+    vec3 atmosphereColor =
+        vec3(
+            0.70,
+            0.85,
+            1.00
+        );
+
     skyColor +=
         atmosphereColor *
         atmosphere *
@@ -244,6 +260,67 @@ void main() {
         oppositeAtmosphere *
         middayBoost *
         0.25;
+
+    /*
+        Stage 6B: Sun / Moon halo.
+
+        This is intentionally placed in skybasic so it renders behind the
+        actual sun/moon texture from skytextured.
+    */
+    float haloWide =
+        pow(
+            celestialAmount,
+            5.0
+        );
+
+    float haloCore =
+        pow(
+            celestialAmount,
+            18.0
+        ) *
+        (
+            1.0 -
+            pow(
+                celestialAmount,
+                96.0
+            )
+        );
+
+    vec3 sunHaloColor =
+        vec3(
+            1.00,
+            0.78,
+            0.45
+        );
+
+    vec3 moonHaloColor =
+        vec3(
+            0.35,
+            0.45,
+            0.75
+        );
+
+    vec3 haloColor =
+        mix(
+            moonHaloColor,
+            sunHaloColor,
+            dayFactor
+        );
+
+    float haloStrength =
+        mix(
+            0.10,
+            0.22,
+            dayFactor
+        );
+
+    skyColor +=
+        haloColor *
+        (
+            haloWide * 0.35 +
+            haloCore
+        ) *
+        haloStrength;
 
     outColor0 =
         vec4(
