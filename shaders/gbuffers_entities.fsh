@@ -14,8 +14,9 @@ in vec2 lightmapUV;
 /* DRAWBUFFERS:0 */
 layout(location = 0) out vec4 outColor;
 
-const float AMBIENT_LIGHT = 0.40;
-const float DIRECT_LIGHT_STRENGTH = 0.65;
+const float AMBIENT_LIGHT = 0.38;
+const float DIRECT_LIGHT_STRENGTH = 0.68;
+const float LIGHTMAP_TINT_STRENGTH = 0.85;
 const float TAU = 6.2831853;
 
 void main() {
@@ -35,6 +36,13 @@ void main() {
             lightmap,
             lightmapUV
         ).rgb;
+
+    vec3 lightmapTint =
+        mix(
+            vec3(1.0),
+            lightmapColor,
+            LIGHTMAP_TINT_STRENGTH
+        );
 
     float timeOfDay =
         mod(
@@ -78,22 +86,22 @@ void main() {
     vec3 daylightColor =
         vec3(
             1.00,
-            0.98,
-            0.95
+            0.96,
+            0.88
         );
 
     vec3 moonlightColor =
         vec3(
-            0.45,
-            0.55,
-            0.75
+            0.34,
+            0.43,
+            0.68
         );
 
     vec3 sunsetColor =
         vec3(
             1.00,
-            0.55,
-            0.20
+            0.48,
+            0.22
         );
 
     vec3 sunlightColor =
@@ -107,7 +115,7 @@ void main() {
         mix(
             sunlightColor,
             sunsetColor,
-            dawnDuskFactor * 0.25
+            dawnDuskFactor * 0.35
         );
 
     vec3 sunDirection =
@@ -124,18 +132,26 @@ void main() {
             0.0
         );
 
+    float directVisibility =
+        mix(
+            1.0,
+            0.35,
+            dawnDuskFactor
+        );
+
     vec3 lighting =
         vec3(
             AMBIENT_LIGHT
         ) +
         diffuse *
         DIRECT_LIGHT_STRENGTH *
+        directVisibility *
         sunlightColor;
 
     vec3 finalColor =
         textureColor.rgb *
         vertexColor.rgb *
-        lightmapColor *
+        lightmapTint *
         lighting;
 
     outColor =
