@@ -3,6 +3,12 @@
 uniform sampler2D colortex0;
 uniform sampler2D depthtex0;
 
+#ifdef DISTANT_HORIZONS
+uniform sampler2D dhDepthTex0;
+uniform float dhNearPlane;
+uniform float dhFarPlane;
+#endif
+
 uniform int worldTime;
 uniform float near;
 uniform float far;
@@ -14,7 +20,11 @@ layout(location = 0) out vec4 color;
 
 const float TAU = 6.2831853;
 
-float linearizeDepth(float depth) {
+float linearizeDepth(
+    float depth,
+    float nearPlane,
+    float farPlane
+) {
 
     float z =
         depth * 2.0 - 1.0;
@@ -22,16 +32,16 @@ float linearizeDepth(float depth) {
     return
         (
             2.0 *
-            near *
-            far
+            nearPlane *
+            farPlane
         ) /
         (
-            far +
-            near -
+            farPlane +
+            nearPlane -
             z *
             (
-                far -
-                near
+                farPlane -
+                nearPlane
             )
         );
 }
@@ -44,27 +54,74 @@ void main() {
             texcoord
         );
 
-    float depth =
+    float vanillaDepth =
         texture(
             depthtex0,
             texcoord
         ).r;
 
+    bool hasDepth =
+        false;
+
+    float viewDistance =
+        0.0;
+
+    if (vanillaDepth < 0.9999) {
+
+        viewDistance =
+            linearizeDepth(
+                vanillaDepth,
+                near,
+                far
+            );
+
+        hasDepth =
+            true;
+    }
+
+    #ifdef DISTANT_HORIZONS
+
+    float dhDepth =
+        texture(
+            dhDepthTex0,
+            texcoord
+        ).r;
+
+    if (dhDepth < 0.9999) {
+
+        float dhViewDistance =
+            linearizeDepth(
+                dhDepth,
+                dhNearPlane,
+                dhFarPlane
+            );
+
+        if (
+            !hasDepth ||
+            dhViewDistance < viewDistance
+        ) {
+
+            viewDistance =
+                dhViewDistance;
+
+            hasDepth =
+                true;
+        }
+    }
+
+    #endif
+
     /*
-        depth == 1.0 usually means sky/background.
-        Do not fog the sky, since skybasic already handles atmospheric color.
+        No vanilla or DH geometry at this pixel.
+        Leave sky untouched because skybasic already handles sky atmosphere.
     */
-    if (depth >= 0.9999) {
+    if (!hasDepth) {
+
         color =
             sceneColor;
 
         return;
     }
-
-    float viewDistance =
-        linearizeDepth(
-            depth
-        );
 
     float timeOfDay =
         mod(
@@ -140,12 +197,6 @@ void main() {
             dawnDuskFactor * 0.22
         );
 
-    /*
-        Stage 6D: Basic distance fog.
-
-        Starts far enough away that nearby blocks stay clear,
-        then slowly blends distant terrain into the sky color.
-    */
     float fogStart =
         far * 0.18;
 

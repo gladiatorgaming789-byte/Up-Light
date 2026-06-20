@@ -1,0 +1,18 @@
+{
+    "version": 1,
+    "uniforms": [
+        "worldTime",
+        "shadowLightPosition"
+    ],
+    "samplers": {},
+    "opaqueDrawBuffers": [
+        0
+    ],
+    "translucentDrawBuffers": [
+        0
+    ],
+    "blending": {
+        "-1": "SRC_ALPHA ONE_MINUS_SRC_ALPHA ONE ONE_MINUS_SRC_ALPHA"
+    },
+    "excludeLodsFromVanillaDepth": false
+}
