@@ -89,7 +89,7 @@ void main() {
         clamp(
             horizonBand,
             0.0,
-            2.0
+            1.0
         );
 
     horizonBand =
@@ -187,6 +187,85 @@ void main() {
             skyColor,
             sunsetColor,
             horizonGlow * 0.25
+        );
+
+    /*
+        Stage 6C: Horizon haze.
+
+        This adds a soft atmospheric band near the horizon.
+        It is subtle during the day, cooler at night, and warmer at sunrise/sunset.
+    */
+    float horizonHaze =
+        1.0 -
+        smoothstep(
+            0.02,
+            0.45,
+            abs(
+                dir.y
+            )
+        );
+
+    horizonHaze =
+        pow(
+            clamp(
+                horizonHaze,
+                0.0,
+                1.0
+            ),
+            1.35
+        );
+
+    vec3 dayHazeColor =
+        vec3(
+            0.78,
+            0.88,
+            1.00
+        );
+
+    vec3 nightHazeColor =
+        vec3(
+            0.07,
+            0.09,
+            0.17
+        );
+
+    vec3 sunsetHazeColor =
+        vec3(
+            1.00,
+            0.62,
+            0.32
+        );
+
+    vec3 hazeColor =
+        mix(
+            nightHazeColor,
+            dayHazeColor,
+            dayFactor
+        );
+
+    hazeColor =
+        mix(
+            hazeColor,
+            sunsetHazeColor,
+            dawnDuskFactor * 0.45
+        );
+
+    float hazeStrength =
+        mix(
+            0.10,
+            0.18,
+            dayFactor
+        );
+
+    hazeStrength +=
+        dawnDuskFactor *
+        0.08;
+
+    skyColor =
+        mix(
+            skyColor,
+            hazeColor,
+            horizonHaze * hazeStrength
         );
 
     float sunHeight =
