@@ -9,6 +9,12 @@ uniform float dhNearPlane;
 uniform float dhFarPlane;
 #endif
 
+#ifdef VOXY
+uniform sampler2D vxDepthTexOpaque;
+uniform sampler2D vxDepthTexTrans;
+uniform int vxRenderDistance;
+#endif
+
 uniform int worldTime;
 uniform float near;
 uniform float far;
@@ -79,7 +85,7 @@ void main() {
             true;
     }
 
-    #ifdef DISTANT_HORIZONS
+#ifdef DISTANT_HORIZONS
 
     float dhDepth =
         texture(
@@ -109,11 +115,52 @@ void main() {
         }
     }
 
-    #endif
+#endif
+
+#ifdef VOXY
+
+    float vxDepth =
+        texture(
+            vxDepthTexTrans,
+            texcoord
+        ).r;
+
+    if (vxDepth < 0.9999) {
+
+        float vxNearPlane =
+            16.0;
+
+        float vxFarPlane =
+            max(
+                16.0,
+                float(vxRenderDistance) * 16.0
+            );
+
+        float vxViewDistance =
+            linearizeDepth(
+                vxDepth,
+                vxNearPlane,
+                vxFarPlane
+            );
+
+        if (
+            !hasDepth ||
+            vxViewDistance < viewDistance
+        ) {
+
+            viewDistance =
+                vxViewDistance;
+
+            hasDepth =
+                true;
+        }
+    }
+
+#endif
 
     /*
-        No vanilla or DH geometry at this pixel.
-        Leave sky untouched because skybasic already handles sky atmosphere.
+        No vanilla, DH, or Voxy geometry at this pixel.
+        Leave sky untouched because skybasic handles sky atmosphere.
     */
     if (!hasDepth) {
 
@@ -202,6 +249,26 @@ void main() {
 
     float fogEnd =
         far * 0.82;
+
+#ifdef VOXY
+
+    fogEnd =
+        max(
+            fogEnd,
+            float(vxRenderDistance) * 16.0 * 0.82
+        );
+
+#endif
+
+#ifdef DISTANT_HORIZONS
+
+    fogEnd =
+        max(
+            fogEnd,
+            dhFarPlane * 0.82
+        );
+
+#endif
 
     float fogAmount =
         smoothstep(

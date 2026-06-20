@@ -2,9 +2,19 @@
     "version": 1,
     "uniforms": [
         "worldTime",
-        "shadowLightPosition"
+        "shadowLightPosition",
+        "vxRenderDistance",
+        "vxViewProj",
+        "vxViewProjInv",
+        "vxModelView",
+        "vxModelViewInv",
+        "vxProj",
+        "vxProjInv"
     ],
-    "samplers": {},
+    "samplers": {
+        "vxDepthTexOpaque": "sampler2D",
+        "vxDepthTexTrans": "sampler2D"
+    },
     "opaqueDrawBuffers": [
         0
     ],
@@ -12,7 +22,8 @@
         0
     ],
     "blending": {
-        "-1": "SRC_ALPHA ONE_MINUS_SRC_ALPHA ONE ONE_MINUS_SRC_ALPHA"
+        "-1": "off",
+        "0": "SRC_ALPHA ONE_MINUS_SRC_ALPHA ONE ONE_MINUS_SRC_ALPHA"
     },
     "excludeLodsFromVanillaDepth": false
 }
