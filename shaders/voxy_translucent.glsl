@@ -2,25 +2,29 @@ layout(location = 0) out vec4 outColor0;
 
 const float VOXY_TRANSLUCENT_TAU = 6.2831853;
 
-vec2 voxy_decodeLightmap(
+vec2 voxy_normalizeLightmap(
     vec2 lightMap
 ) {
 
+    vec2 lm =
+        lightMap;
+
+    if (
+        max(
+            lm.x,
+            lm.y
+        ) > 1.5
+    ) {
+
+        lm /=
+            256.0;
+    }
+
     return
         clamp(
-            (
-                lightMap -
-                vec2(
-                    0.03125
-                )
-            ) *
-            1.0666667,
-            vec2(
-                0.0
-            ),
-            vec2(
-                1.0
-            )
+            lm,
+            vec2(0.0),
+            vec2(1.0)
         );
 }
 
@@ -49,7 +53,7 @@ void voxy_emitFragment(
         );
 
     vec2 lightMap =
-        voxy_decodeLightmap(
+        voxy_normalizeLightmap(
             parameters.lightMap
         );
 
@@ -72,9 +76,9 @@ void voxy_emitFragment(
 
     vec3 nightTint =
         vec3(
-            0.34,
-            0.42,
-            0.72
+            0.40,
+            0.48,
+            0.76
         );
 
     vec3 timeTint =
@@ -84,36 +88,36 @@ void voxy_emitFragment(
             dayFactor
         );
 
-    float skyBrightness =
+    float brightness =
         mix(
-            0.46,
-            1.0,
+            0.56,
+            0.86,
             dayFactor
         );
 
-    float brightness =
-        0.42 +
+    brightness +=
         skyLight *
-        skyBrightness *
-        0.42 +
+        mix(
+            0.20,
+            0.34,
+            dayFactor
+        );
+
+    brightness +=
         blockLight *
-        0.35;
+        0.42;
+
+    brightness =
+        clamp(
+            brightness,
+            0.42,
+            1.0
+        );
 
     vec3 finalColor =
         sampledColor.rgb *
         timeTint *
         brightness;
-
-    finalColor =
-        max(
-            finalColor,
-            sampledColor.rgb *
-            vec3(
-                0.16,
-                0.19,
-                0.30
-            )
-        );
 
     outColor0 =
         vec4(

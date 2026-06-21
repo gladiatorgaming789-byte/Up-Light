@@ -30,25 +30,29 @@ vec3 voxy_getFaceNormal(
         );
 }
 
-vec2 voxy_decodeLightmap(
+vec2 voxy_normalizeLightmap(
     vec2 lightMap
 ) {
 
+    vec2 lm =
+        lightMap;
+
+    if (
+        max(
+            lm.x,
+            lm.y
+        ) > 1.5
+    ) {
+
+        lm /=
+            256.0;
+    }
+
     return
         clamp(
-            (
-                lightMap -
-                vec2(
-                    0.03125
-                )
-            ) *
-            1.0666667,
-            vec2(
-                0.0
-            ),
-            vec2(
-                1.0
-            )
+            lm,
+            vec2(0.0),
+            vec2(1.0)
         );
 }
 
@@ -108,7 +112,7 @@ void voxy_emitFragment(
         );
 
     vec2 lightMap =
-        voxy_decodeLightmap(
+        voxy_normalizeLightmap(
             parameters.lightMap
         );
 
@@ -131,9 +135,9 @@ void voxy_emitFragment(
 
     vec3 moonlightColor =
         vec3(
-            0.32,
-            0.42,
-            0.74
+            0.34,
+            0.44,
+            0.76
         );
 
     vec3 sunsetColor =
@@ -154,7 +158,7 @@ void voxy_emitFragment(
         mix(
             directLightColor,
             sunsetColor,
-            dawnDuskFactor * 0.18
+            dawnDuskFactor * 0.16
         );
 
     vec3 dayAmbientColor =
@@ -166,9 +170,9 @@ void voxy_emitFragment(
 
     vec3 nightAmbientColor =
         vec3(
-            0.32,
             0.40,
-            0.70
+            0.48,
+            0.76
         );
 
     vec3 sunsetAmbientColor =
@@ -189,7 +193,7 @@ void voxy_emitFragment(
         mix(
             ambientColor,
             sunsetAmbientColor,
-            dawnDuskFactor * 0.12
+            dawnDuskFactor * 0.10
         );
 
     vec3 normalDirection =
@@ -212,41 +216,38 @@ void voxy_emitFragment(
         );
 
     /*
-        Voxy LOD lighting should not be multiplied by a fully dark night lightmap.
-        Sky light is used as influence, but a night floor keeps far terrain readable.
+        Voxy LODs do not match vanilla terrain lightmaps exactly.
+        This keeps sky-lit LOD terrain readable at night without making it fullbright.
     */
-    float skyBrightness =
+    float skyLightInfluence =
         mix(
-            0.42,
-            1.0,
-            dayFactor
-        );
-
-    float ambientStrength =
-        mix(
-            0.48,
-            0.62,
-            dayFactor
-        );
-
-    ambientStrength *=
-        mix(
-            0.75,
+            0.58,
             1.0,
             skyLight
         );
 
+    float ambientStrength =
+        mix(
+            0.50,
+            0.66,
+            dayFactor
+        ) *
+        skyLightInfluence;
+
     vec3 ambientLighting =
         ambientColor *
-        ambientStrength *
-        skyBrightness;
+        ambientStrength;
 
-    vec3 directLighting =
+    directLighting =
         directLightColor *
         diffuse *
-        0.34 *
+        0.24 *
         stableDirectLight *
-        skyLight;
+        mix(
+            0.45,
+            1.0,
+            skyLight
+        );
 
     vec3 blockLighting =
         vec3(
@@ -256,9 +257,9 @@ void voxy_emitFragment(
         ) *
         pow(
             blockLight,
-            1.15
+            1.10
         ) *
-        1.15;
+        1.10;
 
     vec3 lighting =
         ambientLighting +
@@ -269,20 +270,32 @@ void voxy_emitFragment(
         max(
             lighting,
             vec3(
-                0.18,
-                0.21,
-                0.32
+                0.22,
+                0.25,
+                0.38
             )
         );
 
-    /*
-        Slight LOD lift so far terrain does not crush to black.
-        Fog/composite will still soften it afterward.
-    */
+    vec3 nightLift =
+        baseColor *
+        vec3(
+            0.26,
+            0.30,
+            0.46
+        );
+
     vec3 finalColor =
         baseColor *
-        lighting *
-        1.18;
+        lighting;
+
+    finalColor =
+        max(
+            finalColor,
+            nightLift *
+            (
+                1.0 - dayFactor
+            )
+        );
 
     outColor0 =
         vec4(

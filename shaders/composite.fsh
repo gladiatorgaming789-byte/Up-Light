@@ -233,9 +233,9 @@ void main() {
 
     vec3 nightFogColor =
         vec3(
-            0.025,
-            0.035,
-            0.075
+            0.055,
+            0.070,
+            0.130
         );
 
     vec3 dawnDuskFogColor =
@@ -256,7 +256,7 @@ void main() {
         mix(
             fogColor,
             dawnDuskFogColor,
-            dawnDuskFactor * 0.18
+            dawnDuskFactor * 0.16
         );
 
     float fogStart =
@@ -271,13 +271,17 @@ void main() {
     if (isLodDepth) {
 
         fogStart =
-            far * 0.06;
+            far * 0.10;
 
         fogEnd =
-            far * 0.52;
+            far * 0.70;
 
         maxFog =
-            0.78;
+            mix(
+                0.46,
+                0.60,
+                dayFactor
+            );
     }
 
     float fogAmount =
