@@ -9,7 +9,235 @@ uniform mat4 gbufferModelViewInverse;
 /* DRAWBUFFERS:0 */
 layout(location = 0) out vec4 outColor0;
 
+const float PI = 3.14159265;
 const float TAU = 6.2831853;
+
+float hash12(
+    vec2 p
+) {
+
+    vec3 p3 =
+        fract(
+            vec3(
+                p.x,
+                p.y,
+                p.x
+            ) *
+            0.1031
+        );
+
+    p3 +=
+        dot(
+            p3,
+            p3.yzx + 33.33
+        );
+
+    return
+        fract(
+            (
+                p3.x +
+                p3.y
+            ) *
+            p3.z
+        );
+}
+
+vec3 getProceduralStars(
+    vec3 dir,
+    float timeOfDay,
+    float rawDayFactor,
+    float celestialAmount
+) {
+
+    /*
+        Smooth night visibility.
+
+        This avoids hard popping around 24000 -> 0 because the stars fade
+        from the day/night curve instead of checking exact world times.
+    */
+    float nightVisibility =
+        1.0 -
+        smoothstep(
+            0.10,
+            0.38,
+            rawDayFactor
+        );
+
+    float horizonFade =
+        smoothstep(
+            0.04,
+            0.28,
+            dir.y
+        );
+
+    float celestialFade =
+        1.0 -
+        smoothstep(
+            0.18,
+            0.72,
+            celestialAmount
+        );
+
+    vec2 starUV =
+        vec2(
+            atan(
+                dir.z,
+                dir.x
+            ) /
+            TAU +
+            0.5,
+            asin(
+                clamp(
+                    dir.y,
+                    -1.0,
+                    1.0
+                )
+            ) /
+            PI +
+            0.5
+        );
+
+    vec2 gridScale =
+        vec2(
+            420.0,
+            180.0
+        );
+
+    vec2 starCell =
+        floor(
+            starUV *
+            gridScale
+        );
+
+    vec2 localPosition =
+        fract(
+            starUV *
+            gridScale
+        );
+
+    float randomValue =
+        hash12(
+            starCell
+        );
+
+    float starMask =
+        step(
+            0.985,
+            randomValue
+        );
+
+    vec2 starCenter =
+        vec2(
+            hash12(
+                starCell + 17.31
+            ),
+            hash12(
+                starCell + 41.73
+            )
+        );
+
+    float distanceToStar =
+        length(
+            localPosition -
+            starCenter
+        );
+
+    float starSize =
+        mix(
+            0.035,
+            0.075,
+            hash12(
+                starCell + 91.13
+            )
+        );
+
+    float smallStar =
+        (
+            1.0 -
+            smoothstep(
+                0.0,
+                starSize,
+                distanceToStar
+            )
+        ) *
+        starMask;
+
+    float largeStarMask =
+        step(
+            0.9975,
+            randomValue
+        );
+
+    float largeStar =
+        (
+            1.0 -
+            smoothstep(
+                0.0,
+                starSize * 1.85,
+                distanceToStar
+            )
+        ) *
+        largeStarMask;
+
+    float twinkle =
+        0.82 +
+        sin(
+            timeOfDay *
+            0.006 +
+            randomValue *
+            83.0
+        ) *
+        0.18;
+
+    float starBrightness =
+        mix(
+            0.55,
+            1.35,
+            hash12(
+                starCell + 7.77
+            )
+        );
+
+    vec3 coolStarColor =
+        vec3(
+            0.72,
+            0.82,
+            1.00
+        );
+
+    vec3 warmStarColor =
+        vec3(
+            1.00,
+            0.92,
+            0.76
+        );
+
+    vec3 starColor =
+        mix(
+            coolStarColor,
+            warmStarColor,
+            hash12(
+                starCell + 23.19
+            )
+        );
+
+    vec3 stars =
+        starColor *
+        (
+            smallStar +
+            largeStar * 0.85
+        ) *
+        starBrightness *
+        twinkle;
+
+    stars *=
+        nightVisibility *
+        horizonFade *
+        celestialFade;
+
+    return
+        stars;
+}
 
 void main() {
 
@@ -341,10 +569,28 @@ void main() {
         0.25;
 
     /*
+        Stage 7: Procedural stars.
+
+        Stars are generated from world-space sky direction, fade smoothly by
+        time of day, fade near the horizon, and fade around the sun/moon halo.
+    */
+    vec3 proceduralStars =
+        getProceduralStars(
+            dir,
+            timeOfDay,
+            rawDayFactor,
+            celestialAmount
+        );
+
+    skyColor +=
+        proceduralStars *
+        0.85;
+
+    /*
         Stage 6B: Sun / Moon halo.
 
-        This is intentionally placed in skybasic so it renders behind the
-        actual sun/moon texture from skytextured.
+        This is intentionally placed after the procedural stars so the halo
+        can softly overpower nearby stars around the moon or sun.
     */
     float haloWide =
         pow(
