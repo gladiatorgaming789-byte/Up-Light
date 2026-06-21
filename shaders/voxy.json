@@ -1,8 +1,7 @@
 {
     "version": 1,
     "uniforms": [
-        "worldTime",
-        "shadowLightPosition"
+        "worldTime"
     ],
     "samplers": {
         "vxDepthTexOpaque": "sampler2D",

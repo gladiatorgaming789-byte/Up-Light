@@ -69,16 +69,16 @@ void voxy_emitFragment(
 
     vec3 dayTint =
         vec3(
-            0.86,
-            0.95,
+            0.88,
+            0.96,
             1.00
         );
 
     vec3 nightTint =
         vec3(
-            0.40,
-            0.48,
-            0.76
+            0.30,
+            0.38,
+            0.62
         );
 
     vec3 timeTint =
@@ -90,27 +90,27 @@ void voxy_emitFragment(
 
     float brightness =
         mix(
-            0.56,
-            0.86,
+            0.42,
+            0.78,
             dayFactor
         );
 
     brightness +=
         skyLight *
         mix(
-            0.20,
-            0.34,
+            0.16,
+            0.30,
             dayFactor
         );
 
     brightness +=
         blockLight *
-        0.42;
+        0.38;
 
     brightness =
         clamp(
             brightness,
-            0.42,
+            0.34,
             1.0
         );
 

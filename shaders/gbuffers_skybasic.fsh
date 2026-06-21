@@ -5,6 +5,7 @@ in vec3 skyDirection;
 uniform int worldTime;
 uniform vec3 shadowLightPosition;
 uniform mat4 gbufferModelViewInverse;
+uniform int renderStage;
 
 /* DRAWBUFFERS:0 */
 layout(location = 0) out vec4 outColor0;
@@ -251,6 +252,12 @@ void main() {
         normalize(
             skyDirection
         );
+
+    #ifdef MC_RENDER_STAGE_STARS
+        if (renderStage == MC_RENDER_STAGE_STARS) {
+            discard;
+        }
+    #endif
 
     float celestialAmount =
         max(
