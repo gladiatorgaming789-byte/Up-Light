@@ -1,0 +1,255 @@
+Stage 7 — Night Sky
+Stage 7A — Procedural Stars
+
+Generate our own stars in gbuffers_skybasic.fsh so night has a custom look instead of vanilla stars.
+
+Stage 7B — Disable / Hide Vanilla Stars
+
+Use render stage detection to block vanilla star geometry, since stars=false alone did not work.
+
+Stage 7C — Star Brightness Tuning
+
+Adjust density, brightness, twinkle, and horizon fade so stars look natural.
+
+Stage 7D — Moonlight Sky Polish
+
+Improve the night sky colors around the moon so the procedural stars blend better.
+
+Stage 7E — Milky Way / Star Band
+
+Add a subtle faint star-cloud band across the sky.
+
+Stage 8 — Clouds
+Stage 8A — Basic Custom Clouds
+
+Add a gbuffers_clouds shader so clouds can be controlled by the shader instead of vanilla.
+
+Stage 8B — Cloud Color Matching
+
+Make clouds change color at day, sunset, and night.
+
+Stage 8C — Soft Cloud Edges
+
+Reduce harsh pixel edges and make clouds feel softer.
+
+Stage 8D — Moving Layered Clouds
+
+Add multiple cloud layers moving at different speeds.
+
+Stage 8E — Cloud Horizon Fade
+
+Blend clouds into the horizon so they do not look cut off.
+
+Stage 9 — Weather Atmosphere
+Stage 9A — Rain Fog
+
+Make fog thicker and darker during rain.
+
+Stage 9B — Snow Haze
+
+Add brighter, colder fog during snow.
+
+Stage 9C — Storm Lighting
+
+Darken the world and sky during thunderstorms.
+
+Stage 9D — Wet Atmosphere
+
+Slightly boost contrast and cool tones when raining.
+
+Stage 9E — Lightning Flash Color
+
+Add a quick bluish-white flash during lightning if a useful uniform is available.
+
+Stage 10 — Water
+Stage 10A — Water Shader Setup
+
+Add gbuffers_water.fsh and gbuffers_water.vsh.
+
+Stage 10B — Water Tint
+
+Make water color shift by biome-like lighting, depth, and time of day.
+
+Stage 10C — Distance Fade
+
+Make water fade into fog/blue with distance.
+
+Stage 10D — Fresnel Edge Shine
+
+Add brighter reflections at shallow viewing angles.
+
+Stage 10E — Simple Sky Reflection
+
+Fake a soft reflection of the sky color on water.
+
+Stage 10F — Underwater Fog
+
+Add underwater color and visibility falloff.
+
+Stage 11 — Lighting Upgrade
+Stage 11A — Shared Time-of-Day Colors
+
+Unify the day, sunset, and night colors across terrain, entities, sky, Voxy, and DH.
+
+Stage 11B — Better Entity Lighting
+
+Make entities match terrain lighting more closely.
+
+Stage 11C — Block Entity Lighting
+
+Fix block entities like chests, signs, beds, and similar objects.
+
+Stage 11D — Hand Lighting
+
+Make first-person held items match the world lighting.
+
+Stage 11E — Emissive Balance
+
+Tune torches, lava, particles, and glowing objects so they do not overbrighten.
+
+Stage 12 — Shadows
+Stage 12A — Basic Shadow Map
+
+Add simple sun/moon shadows.
+
+Stage 12B — Shadow Softening
+
+Make shadows less harsh.
+
+Stage 12C — Shadow Distance Tuning
+
+Balance quality and performance.
+
+Stage 12D — Night Shadow Behavior
+
+Make moon shadows softer and weaker than daytime shadows.
+
+Stage 12E — Entity Shadows
+
+Make mobs/players interact with shadowing correctly.
+
+Stage 13 — Post Processing
+Stage 13A — Tonemapping
+
+Prevent colors from looking too flat or too blown out.
+
+Stage 13B — Exposure
+
+Adjust brightness based on scene lighting.
+
+Stage 13C — Saturation / Contrast
+
+Add subtle color polish.
+
+Stage 13D — Bloom
+
+Add glow from bright areas like sun, moon, lava, and lights.
+
+Stage 13E — Vignette
+
+Add a very subtle edge darkening option.
+
+Stage 14 — LOD Mod Polish
+Stage 14A — Voxy Color Matching
+
+Fine-tune Voxy terrain so it matches normal terrain in day/night/weather.
+
+Stage 14B — Voxy Fog Matching
+
+Make Voxy fog blend smoothly with vanilla terrain fog.
+
+Stage 14C — Distant Horizons Terrain Matching
+
+Tune DH terrain color and lighting.
+
+Stage 14D — Distant Horizons Water Matching
+
+Make DH water match normal water once Stage 10 exists.
+
+Stage 14E — Safe LOD Fallbacks
+
+Make sure the shader works when Voxy/DH are missing, disabled, or partially loaded.
+
+Stage 15 — Material Effects
+Stage 15A — Simple Specular Highlights
+
+Add basic shine to water, metal-like blocks, and some surfaces.
+
+Stage 15B — Roughness Feel
+
+Make some blocks look dull while others look slightly shiny.
+
+Stage 15C — Emissive Materials
+
+Improve glowing blocks and light sources.
+
+Stage 15D — Lava Polish
+
+Make lava brighter, warmer, and slightly bloom-friendly.
+
+Stage 15E — Ice / Glass Polish
+
+Improve transparent surfaces.
+
+Stage 16 — Settings Menu
+Stage 16A — Shader Options
+
+Add options to shaders.properties for major features.
+
+Stage 16B — Quality Presets
+
+Add Low / Medium / High style presets.
+
+Stage 16C — Feature Toggles
+
+Add toggles for clouds, stars, bloom, fog, water, and shadows.
+
+Stage 16D — Performance Toggles
+
+Add cheaper options for low-end PCs.
+
+Stage 16E — Debug Toggles
+
+Add debug views for depth, fog, lightmap, and LOD matching.
+
+Stage 17 — Performance Pass
+Stage 17A — Remove Duplicate Math
+
+Move repeated time-of-day logic into shared includes if possible.
+
+Stage 17B — Reduce Expensive Functions
+
+Cut down heavy pow, sin, and repeated calculations where possible.
+
+Stage 17C — Lower-End GPU Mode
+
+Add a mode that disables expensive effects.
+
+Stage 17D — Buffer Cleanup
+
+Make sure every shader writes only the buffers it needs.
+
+Stage 17E — Final Compile Cleanup
+
+Fix warnings, unused uniforms, and compatibility issues.
+
+Stage 18 — Final Visual Polish
+Stage 18A — Daytime Color Pass
+
+Make daytime bright but not washed out.
+
+Stage 18B — Sunset Color Pass
+
+Make sunsets warmer and more cinematic.
+
+Stage 18C — Night Color Pass
+
+Make night readable but still dark.
+
+Stage 18D — Cave Color Pass
+
+Make caves feel darker, warmer near light, and less flat.
+
+Stage 18E — Screenshot Pass
+
+Tune the shader by testing common scenes: forest, village, cave, ocean, mountain, Nether, End.
