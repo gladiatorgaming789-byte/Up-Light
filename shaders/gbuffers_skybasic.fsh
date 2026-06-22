@@ -51,31 +51,31 @@ vec3 getProceduralStars(
 ) {
 
     /*
-        Smooth night visibility.
+        Stage 7C: Star brightness tuning.
 
-        This avoids hard popping around 24000 -> 0 because the stars fade
-        from the day/night curve instead of checking exact world times.
+        This keeps stars visible and pretty, but less noisy/overbright.
+        It also fades stars harder near the horizon and around the moon/sun.
     */
     float nightVisibility =
         1.0 -
         smoothstep(
-            0.10,
-            0.38,
+            0.06,
+            0.34,
             rawDayFactor
         );
 
     float horizonFade =
         smoothstep(
-            0.04,
-            0.28,
+            0.08,
+            0.38,
             dir.y
         );
 
     float celestialFade =
         1.0 -
         smoothstep(
-            0.18,
-            0.72,
+            0.12,
+            0.58,
             celestialAmount
         );
 
@@ -100,8 +100,8 @@ vec3 getProceduralStars(
 
     vec2 gridScale =
         vec2(
-            420.0,
-            180.0
+            440.0,
+            190.0
         );
 
     vec2 starCell =
@@ -121,9 +121,14 @@ vec3 getProceduralStars(
             starCell
         );
 
+    /*
+        Higher number = fewer stars.
+        Lower number = more stars.
+    */
     float starMask =
-        step(
-            0.985,
+        smoothstep(
+            0.9885,
+            0.9960,
             randomValue
         );
 
@@ -145,27 +150,39 @@ vec3 getProceduralStars(
 
     float starSize =
         mix(
-            0.035,
-            0.075,
+            0.026,
+            0.055,
             hash12(
                 starCell + 91.13
             )
         );
 
-    float smallStar =
-        (
-            1.0 -
-            smoothstep(
-                0.0,
-                starSize,
-                distanceToStar
-            )
+    float starCore =
+        1.0 -
+        smoothstep(
+            0.0,
+            starSize * 0.42,
+            distanceToStar
+        );
+
+    float starGlow =
+        1.0 -
+        smoothstep(
+            starSize * 0.35,
+            starSize,
+            distanceToStar
+        );
+
+    float starShape =
+        max(
+            starCore,
+            starGlow * 0.45
         ) *
         starMask;
 
     float largeStarMask =
         step(
-            0.9975,
+            0.9984,
             randomValue
         );
 
@@ -174,26 +191,26 @@ vec3 getProceduralStars(
             1.0 -
             smoothstep(
                 0.0,
-                starSize * 1.85,
+                starSize * 1.65,
                 distanceToStar
             )
         ) *
         largeStarMask;
 
     float twinkle =
-        0.82 +
+        0.94 +
         sin(
             timeOfDay *
-            0.006 +
+            0.004 +
             randomValue *
-            83.0
+            91.0
         ) *
-        0.18;
+        0.06;
 
     float starBrightness =
         mix(
-            0.55,
-            1.35,
+            0.38,
+            1.05,
             hash12(
                 starCell + 7.77
             )
@@ -201,8 +218,8 @@ vec3 getProceduralStars(
 
     vec3 coolStarColor =
         vec3(
-            0.72,
-            0.82,
+            0.78,
+            0.86,
             1.00
         );
 
@@ -210,7 +227,7 @@ vec3 getProceduralStars(
         vec3(
             1.00,
             0.92,
-            0.76
+            0.78
         );
 
     vec3 starColor =
@@ -219,14 +236,14 @@ vec3 getProceduralStars(
             warmStarColor,
             hash12(
                 starCell + 23.19
-            )
+            ) * 0.55
         );
 
     vec3 stars =
         starColor *
         (
-            smallStar +
-            largeStar * 0.85
+            starShape +
+            largeStar * 0.75
         ) *
         starBrightness *
         twinkle;
