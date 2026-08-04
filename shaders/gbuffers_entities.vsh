@@ -22,7 +22,7 @@ void main() {
 
     viewNormal =
         normalize(
-            normalMatrix *
+            mat3(modelViewMatrix) *
             vaNormal
         );
 
