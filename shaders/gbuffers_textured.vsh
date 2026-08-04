@@ -8,7 +8,6 @@ in vec3 vaNormal;
 in ivec2 vaUV2;
 
 // Uniforms
-uniform mat3 normalMatrix;
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 uniform vec3 chunkOffset;
