@@ -8,7 +8,6 @@ in ivec2 vaUV2;
 
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
-uniform mat3 normalMatrix;
 
 out vec2 uv;
 out vec4 vertexColor;
