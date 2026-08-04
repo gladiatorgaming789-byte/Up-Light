@@ -617,26 +617,26 @@ void main() {
     /*
         Stage 6B: Sun / Moon halo.
 
-        The night halo is deliberately narrower and dimmer than the daytime
-        sun halo so it does not erase a large area of the procedural star field.
+        The night halo is intentionally very subtle. It should frame the moon
+        without noticeably washing out the surrounding star field.
     */
     float haloWideExponent =
         mix(
-            18.0,
+            28.0,
             5.0,
             dayFactor
         );
 
     float haloCoreExponent =
         mix(
-            52.0,
+            72.0,
             18.0,
             dayFactor
         );
 
     float haloCutoffExponent =
         mix(
-            180.0,
+            240.0,
             96.0,
             dayFactor
         );
@@ -669,9 +669,9 @@ void main() {
 
     vec3 moonHaloColor =
         vec3(
-            0.30,
-            0.38,
-            0.62
+            0.20,
+            0.25,
+            0.42
         );
 
     vec3 haloColor =
@@ -683,14 +683,14 @@ void main() {
 
     float haloStrength =
         mix(
-            0.030,
+            0.008,
             0.22,
             dayFactor
         );
 
     float haloWideWeight =
         mix(
-            0.16,
+            0.08,
             0.35,
             dayFactor
         );
