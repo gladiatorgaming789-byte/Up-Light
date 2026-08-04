@@ -53,8 +53,8 @@ vec3 getProceduralStars(
     /*
         Stage 7C: Star brightness tuning.
 
-        This keeps stars visible and pretty, but less noisy/overbright.
-        It also fades stars harder near the horizon and around the moon/sun.
+        Tuned from 2560x1440 night screenshots. Stars remain subtle, but their
+        cores are large enough to survive sub-pixel rendering at high resolution.
     */
     float nightVisibility =
         1.0 -
@@ -66,16 +66,16 @@ vec3 getProceduralStars(
 
     float horizonFade =
         smoothstep(
-            0.08,
-            0.38,
+            0.04,
+            0.30,
             dir.y
         );
 
     float celestialFade =
         1.0 -
         smoothstep(
-            0.12,
-            0.58,
+            0.14,
+            0.62,
             celestialAmount
         );
 
@@ -127,8 +127,8 @@ vec3 getProceduralStars(
     */
     float starMask =
         smoothstep(
-            0.9885,
-            0.9960,
+            0.9865,
+            0.9950,
             randomValue
         );
 
@@ -150,8 +150,8 @@ vec3 getProceduralStars(
 
     float starSize =
         mix(
-            0.026,
-            0.055,
+            0.045,
+            0.090,
             hash12(
                 starCell + 91.13
             )
@@ -161,14 +161,14 @@ vec3 getProceduralStars(
         1.0 -
         smoothstep(
             0.0,
-            starSize * 0.42,
+            starSize * 0.48,
             distanceToStar
         );
 
     float starGlow =
         1.0 -
         smoothstep(
-            starSize * 0.35,
+            starSize * 0.30,
             starSize,
             distanceToStar
         );
@@ -176,13 +176,13 @@ vec3 getProceduralStars(
     float starShape =
         max(
             starCore,
-            starGlow * 0.45
+            starGlow * 0.42
         ) *
         starMask;
 
     float largeStarMask =
         step(
-            0.9984,
+            0.9982,
             randomValue
         );
 
@@ -191,26 +191,26 @@ vec3 getProceduralStars(
             1.0 -
             smoothstep(
                 0.0,
-                starSize * 1.65,
+                starSize * 1.55,
                 distanceToStar
             )
         ) *
         largeStarMask;
 
     float twinkle =
-        0.94 +
+        0.95 +
         sin(
             timeOfDay *
             0.004 +
             randomValue *
             91.0
         ) *
-        0.06;
+        0.05;
 
     float starBrightness =
         mix(
-            0.38,
-            1.05,
+            0.52,
+            1.20,
             hash12(
                 starCell + 7.77
             )
@@ -243,7 +243,7 @@ vec3 getProceduralStars(
         starColor *
         (
             starShape +
-            largeStar * 0.75
+            largeStar * 0.70
         ) *
         starBrightness *
         twinkle;
@@ -608,7 +608,7 @@ void main() {
 
     skyColor +=
         proceduralStars *
-        0.68;
+        0.82;
 
     /*
         Stage 6B: Sun / Moon halo.
