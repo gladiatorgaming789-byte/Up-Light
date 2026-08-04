@@ -71,11 +71,15 @@ vec3 getProceduralStars(
             dir.y
         );
 
+    /*
+        Only hide stars close to the moon/sun disc. The older 0.14-0.62 range
+        dimmed stars across most of the visible hemisphere.
+    */
     float celestialFade =
         1.0 -
         smoothstep(
-            0.14,
-            0.62,
+            0.92,
+            0.992,
             celestialAmount
         );
 
@@ -596,7 +600,7 @@ void main() {
         Stage 7C: Procedural star tuning.
 
         Stars are generated from world-space sky direction, fade smoothly by
-        time of day, fade near the horizon, and fade around the sun/moon halo.
+        time of day, fade near the horizon, and fade only close to the moon/sun.
     */
     vec3 proceduralStars =
         getProceduralStars(
@@ -613,25 +617,46 @@ void main() {
     /*
         Stage 6B: Sun / Moon halo.
 
-        This is intentionally placed after the procedural stars so the halo
-        can softly overpower nearby stars around the moon or sun.
+        The night halo is deliberately narrower and dimmer than the daytime
+        sun halo so it does not erase a large area of the procedural star field.
     */
+    float haloWideExponent =
+        mix(
+            18.0,
+            5.0,
+            dayFactor
+        );
+
+    float haloCoreExponent =
+        mix(
+            52.0,
+            18.0,
+            dayFactor
+        );
+
+    float haloCutoffExponent =
+        mix(
+            180.0,
+            96.0,
+            dayFactor
+        );
+
     float haloWide =
         pow(
             celestialAmount,
-            5.0
+            haloWideExponent
         );
 
     float haloCore =
         pow(
             celestialAmount,
-            18.0
+            haloCoreExponent
         ) *
         (
             1.0 -
             pow(
                 celestialAmount,
-                96.0
+                haloCutoffExponent
             )
         );
 
@@ -644,9 +669,9 @@ void main() {
 
     vec3 moonHaloColor =
         vec3(
-            0.35,
-            0.45,
-            0.75
+            0.30,
+            0.38,
+            0.62
         );
 
     vec3 haloColor =
@@ -658,15 +683,22 @@ void main() {
 
     float haloStrength =
         mix(
-            0.10,
+            0.030,
             0.22,
+            dayFactor
+        );
+
+    float haloWideWeight =
+        mix(
+            0.16,
+            0.35,
             dayFactor
         );
 
     skyColor +=
         haloColor *
         (
-            haloWide * 0.35 +
+            haloWide * haloWideWeight +
             haloCore
         ) *
         haloStrength;
