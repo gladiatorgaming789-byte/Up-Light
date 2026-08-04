@@ -1,17 +1,5 @@
 #version 460 compatibility
 
-// Vertex Attributes
-in vec3 vaPosition;
-in vec2 vaUV0;
-in vec4 vaColor;
-in vec3 vaNormal;
-in ivec2 vaUV2;
-
-// Uniforms
-uniform mat4 modelViewMatrix;
-uniform mat4 projectionMatrix;
-uniform vec3 chunkOffset;
-
 // Outputs
 out vec2 uv;
 out vec3 vertexColor;
@@ -20,29 +8,26 @@ out vec2 lightmapUV;
 
 void main() {
 
-    uv = vaUV0;
-    vertexColor = vaColor.rgb;
+    uv =
+        gl_MultiTexCoord0.xy;
+
+    vertexColor =
+        gl_Color.rgb;
 
     viewNormal =
         normalize(
-            mat3(modelViewMatrix) *
-            vaNormal
+            gl_NormalMatrix *
+            gl_Normal
         );
 
     lightmapUV =
-        vec2(
-            vaUV2
-        ) / 256.0;
-
-    vec3 worldPosition =
-        vaPosition +
-        chunkOffset;
-
-    vec4 viewPosition =
-        modelViewMatrix *
-        vec4(worldPosition, 1.0);
+        (
+            gl_TextureMatrix[1] *
+            gl_MultiTexCoord2
+        ).xy;
 
     gl_Position =
-        projectionMatrix *
-        viewPosition;
+        gl_ProjectionMatrix *
+        gl_ModelViewMatrix *
+        gl_Vertex;
 }
