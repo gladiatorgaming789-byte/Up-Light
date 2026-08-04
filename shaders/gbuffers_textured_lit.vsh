@@ -1,4 +1,4 @@
-#version 460
+#version 460 compatibility
 
 // Vertex Attributes
 in vec3 vaPosition;
