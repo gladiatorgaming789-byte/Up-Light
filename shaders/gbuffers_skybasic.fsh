@@ -43,6 +43,275 @@ float hash12(
         );
 }
 
+float valueNoise(
+    vec2 p
+) {
+
+    vec2 cell =
+        floor(
+            p
+        );
+
+    vec2 localPosition =
+        fract(
+            p
+        );
+
+    localPosition =
+        localPosition *
+        localPosition *
+        (
+            3.0 -
+            2.0 *
+            localPosition
+        );
+
+    float bottomLeft =
+        hash12(
+            cell
+        );
+
+    float bottomRight =
+        hash12(
+            cell +
+            vec2(
+                1.0,
+                0.0
+            )
+        );
+
+    float topLeft =
+        hash12(
+            cell +
+            vec2(
+                0.0,
+                1.0
+            )
+        );
+
+    float topRight =
+        hash12(
+            cell +
+            vec2(
+                1.0,
+                1.0
+            )
+        );
+
+    float bottom =
+        mix(
+            bottomLeft,
+            bottomRight,
+            localPosition.x
+        );
+
+    float top =
+        mix(
+            topLeft,
+            topRight,
+            localPosition.x
+        );
+
+    return
+        mix(
+            bottom,
+            top,
+            localPosition.y
+        );
+}
+
+vec3 getMilkyWay(
+    vec3 dir,
+    float rawDayFactor,
+    float celestialAmount
+) {
+
+    /*
+        Stage 7E: Milky Way / star band.
+
+        A tilted great-circle band gives the night sky a faint cloudy structure.
+        Two inexpensive noise layers break up the shape while a darker lane
+        prevents it from reading as a flat glowing stripe.
+    */
+    vec3 bandNormal =
+        normalize(
+            vec3(
+                0.38,
+                0.22,
+                -0.90
+            )
+        );
+
+    float bandDistance =
+        abs(
+            dot(
+                dir,
+                bandNormal
+            )
+        );
+
+    float wideBand =
+        1.0 -
+        smoothstep(
+            0.08,
+            0.30,
+            bandDistance
+        );
+
+    float coreBand =
+        1.0 -
+        smoothstep(
+            0.01,
+            0.115,
+            bandDistance
+        );
+
+    /*
+        Direction-based coordinates avoid a visible longitude seam.
+    */
+    vec2 cloudUV =
+        vec2(
+            dot(
+                dir,
+                vec3(
+                    1.7,
+                    2.3,
+                    -0.9
+                )
+            ),
+            dot(
+                dir,
+                vec3(
+                    -1.2,
+                    0.6,
+                    2.1
+                )
+            )
+        ) *
+        2.6;
+
+    float broadNoise =
+        valueNoise(
+            cloudUV *
+            1.8 +
+            vec2(
+                4.2,
+                8.1
+            )
+        );
+
+    float fineNoise =
+        valueNoise(
+            cloudUV *
+            4.7 +
+            vec2(
+                13.8,
+                2.6
+            )
+        );
+
+    float cloudNoise =
+        broadNoise *
+        0.68 +
+        fineNoise *
+        0.32;
+
+    float cloudTexture =
+        smoothstep(
+            0.24,
+            0.82,
+            cloudNoise
+        );
+
+    float dustNoise =
+        valueNoise(
+            cloudUV *
+            6.2 +
+            vec2(
+                20.1,
+                11.7
+            )
+        );
+
+    float dustLane =
+        smoothstep(
+            0.54,
+            0.78,
+            dustNoise
+        ) *
+        coreBand;
+
+    float bandStrength =
+        wideBand *
+        mix(
+            0.30,
+            1.00,
+            cloudTexture
+        );
+
+    bandStrength +=
+        coreBand *
+        0.20;
+
+    bandStrength *=
+        1.0 -
+        dustLane *
+        0.52;
+
+    float nightVisibility =
+        1.0 -
+        smoothstep(
+            0.06,
+            0.34,
+            rawDayFactor
+        );
+
+    float horizonFade =
+        smoothstep(
+            0.03,
+            0.26,
+            dir.y
+        );
+
+    float celestialFade =
+        1.0 -
+        smoothstep(
+            0.94,
+            0.997,
+            celestialAmount
+        );
+
+    vec3 coolBandColor =
+        vec3(
+            0.16,
+            0.21,
+            0.36
+        );
+
+    vec3 warmBandColor =
+        vec3(
+            0.28,
+            0.24,
+            0.32
+        );
+
+    vec3 bandColor =
+        mix(
+            coolBandColor,
+            warmBandColor,
+            broadNoise *
+            0.35
+        );
+
+    return
+        bandColor *
+        bandStrength *
+        nightVisibility *
+        horizonFade *
+        celestialFade *
+        0.040;
+}
+
 vec3 getProceduralStars(
     vec3 dir,
     float timeOfDay,
@@ -672,6 +941,22 @@ void main() {
             antiMoonScale,
             antiMoonAmount * 0.16
         );
+
+    /*
+        Stage 7E: Milky Way / star band.
+
+        The diffuse band is added before the procedural stars so individual
+        stars remain crisp and readable on top of the faint cloud structure.
+    */
+    vec3 milkyWay =
+        getMilkyWay(
+            dir,
+            rawDayFactor,
+            celestialAmount
+        );
+
+    skyColor +=
+        milkyWay;
 
     /*
         Stage 7C: Procedural star tuning.
