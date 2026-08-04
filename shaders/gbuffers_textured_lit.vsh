@@ -23,7 +23,11 @@ void main() {
     uv = vaUV0;
     vertexColor = vaColor.rgb;
 
-    viewNormal = normalize(normalMatrix * vaNormal);
+    viewNormal =
+        normalize(
+            mat3(modelViewMatrix) *
+            vaNormal
+        );
 
     lightmapUV =
         vec2(
