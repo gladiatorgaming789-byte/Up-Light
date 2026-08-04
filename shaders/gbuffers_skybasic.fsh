@@ -621,7 +621,7 @@ void main() {
 
     skyColor +=
         proceduralStars *
-        0.82;
+        0.94;
 
     /*
         Stage 6B: Sun / Moon halo.
