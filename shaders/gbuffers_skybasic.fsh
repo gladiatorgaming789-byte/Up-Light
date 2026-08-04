@@ -541,9 +541,9 @@ void main() {
     /*
         Atmospheric scattering.
 
-        The second multiplier prevents the atmosphere from becoming strongest
-        directly on top of the sun/moon texture. This keeps the celestial body
-        from becoming overexposed while preserving a glow around it.
+        shadowLightPosition follows the moon at night, so this broad daytime
+        scattering must be faded out by dayFactor. Without that gate, changing
+        the small explicit moon halo barely affects the much larger visible glow.
     */
     float atmosphere =
         pow(
@@ -558,6 +558,13 @@ void main() {
             )
         );
 
+    float atmosphereDayVisibility =
+        smoothstep(
+            0.08,
+            0.32,
+            dayFactor
+        );
+
     vec3 atmosphereColor =
         vec3(
             0.70,
@@ -569,6 +576,7 @@ void main() {
         atmosphereColor *
         atmosphere *
         middayBoost *
+        atmosphereDayVisibility *
         0.15;
 
     float oppositeAmount =
@@ -594,6 +602,7 @@ void main() {
         ) *
         oppositeAtmosphere *
         middayBoost *
+        atmosphereDayVisibility *
         0.25;
 
     /*
