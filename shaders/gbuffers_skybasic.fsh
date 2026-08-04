@@ -606,6 +606,74 @@ void main() {
         0.25;
 
     /*
+        Stage 7D: Moonlight sky polish.
+
+        This is mainly a directional color shift, not another bright halo.
+        The moon-facing sky becomes slightly cooler while the opposite side
+        becomes a little deeper, giving the night sky more shape around stars.
+    */
+    float nightFactor =
+        1.0 -
+        dayFactor;
+
+    float moonFacingAmount =
+        pow(
+            celestialAmount,
+            1.8
+        ) *
+        nightFactor;
+
+    vec3 moonFacingScale =
+        vec3(
+            0.93,
+            1.03,
+            1.16
+        );
+
+    skyColor *=
+        mix(
+            vec3(1.0),
+            moonFacingScale,
+            moonFacingAmount * 0.32
+        );
+
+    float moonCoreAmount =
+        pow(
+            celestialAmount,
+            6.0
+        ) *
+        nightFactor;
+
+    skyColor +=
+        vec3(
+            0.0015,
+            0.0030,
+            0.0070
+        ) *
+        moonCoreAmount;
+
+    float antiMoonAmount =
+        pow(
+            oppositeAmount,
+            1.5
+        ) *
+        nightFactor;
+
+    vec3 antiMoonScale =
+        vec3(
+            0.94,
+            0.96,
+            1.01
+        );
+
+    skyColor *=
+        mix(
+            vec3(1.0),
+            antiMoonScale,
+            antiMoonAmount * 0.16
+        );
+
+    /*
         Stage 7C: Procedural star tuning.
 
         Stars are generated from world-space sky direction, fade smoothly by
