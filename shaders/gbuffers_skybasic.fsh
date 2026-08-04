@@ -593,7 +593,7 @@ void main() {
         0.25;
 
     /*
-        Stage 7: Procedural stars.
+        Stage 7C: Procedural star tuning.
 
         Stars are generated from world-space sky direction, fade smoothly by
         time of day, fade near the horizon, and fade around the sun/moon halo.
@@ -608,7 +608,7 @@ void main() {
 
     skyColor +=
         proceduralStars *
-        0.85;
+        0.68;
 
     /*
         Stage 6B: Sun / Moon halo.
